@@ -6,7 +6,6 @@ core/
     network_info.dart
   utils/
     input_converter.dart
-  service_locator.dart
 data/
   datasources/
     local/
@@ -36,5 +35,8 @@ presentation/
     pages/
       category_page.dart
     widgets/
-      category_list_widget.dart
+      add_button.dart
+      category_list.dart
+      product_card.dart
+      product_grid.dart
 main.dart
