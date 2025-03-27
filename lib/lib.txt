@@ -1,0 +1,40 @@
+core/
+  errors/
+    exceptions.dart
+    failures.dart
+  network/
+    network_info.dart
+  utils/
+    input_converter.dart
+  service_locator.dart
+data/
+  datasources/
+    local/
+    remote/
+      category_remote_data_source.dart
+      product_remote_data_source.dart
+  models/
+    category_model.dart
+    product_model.dart
+  repositories/
+    category_repository_impl.dart
+    product_repository_impl.dart
+domain/
+  entities/
+    category.dart
+    product.dart
+  repositories/
+    category_repository.dart
+    product_repository.dart
+  usecases/
+    get_categories.dart
+    get_products_by_category_id.dart
+features/
+presentation/
+  blocs/
+  ui/
+    pages/
+      category_page.dart
+    widgets/
+      category_list_widget.dart
+main.dart

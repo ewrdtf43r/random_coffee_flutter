@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/category.dart';
+import '../../../domain/entities/category.dart' as CategoryEntity; // Добавляем импорт с псевдонимом
 
 class CategoryListWidget extends StatelessWidget {
-  final List<Category> categories;
+  final List<CategoryEntity.Category> categories; // Используем CategoryEntity.Category
 
   const CategoryListWidget({Key? key, required this.categories}) : super(key: key);
 
@@ -13,7 +13,7 @@ class CategoryListWidget extends StatelessWidget {
       itemBuilder: (context, index) {
         final category = categories[index];
         return ListTile(
-          title: Text(category.name),
+          title: Text(category.slug), // Заменяем name на slug
         );
       },
     );
