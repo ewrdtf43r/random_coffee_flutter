@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 // import 'package:your_app_name/core/errors/exceptions.dart'; // Убедитесь, что путь корректен
 // import 'package:your_app_name/data/models/product_model.dart'; // Убедитесь, что путь корректен
-import 'package:get_it/get_it.dart';
 import '../../../core/errors/exceptions.dart';
 import '../../../data/models/product_model.dart';
 

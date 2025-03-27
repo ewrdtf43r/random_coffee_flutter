@@ -14,7 +14,7 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   @override
   Future<List<CategoryModel>> getCategories() async {
     try {
-      final response = await client.get('/categories/'); // Изменен endpoint
+      final response = await client.get('/products/categories');
 
       if (response.statusCode == 200) {
         final jsonData = response.data as Map<String, dynamic>;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart'; // Добавлен импорт get_it
+import 'package:dio/dio.dart'; // Импортируем Dio напрямую
 import '../../../data/datasources/remote/category_remote_data_source.dart';
 import '../../../data/datasources/remote/product_remote_data_source.dart';
 import '../../../data/repositories/category_repository_impl.dart';
@@ -11,7 +11,9 @@ import '../../../domain/usecases/get_products_by_category_id.dart';
 import '../../../core/errors/failures.dart';
 
 class CategoryPage extends StatefulWidget {
-  const CategoryPage({Key? key}) : super(key: key);
+  final Dio dio; // Принимаем Dio через конструктор
+
+  const CategoryPage({Key? key, required this.dio}) : super(key: key);
 
   @override
   State<CategoryPage> createState() => _CategoryPageState();
@@ -30,8 +32,8 @@ class _CategoryPageState extends State<CategoryPage> {
   @override
   void initState() {
     super.initState();
-    _categoryRemoteDataSource = CategoryRemoteDataSourceImpl(client: GetIt.I<Dio>()); // Используем get_it
-    _productRemoteDataSource = ProductRemoteDataSourceImpl(client: GetIt.I<Dio>()); // Используем get_it
+    _categoryRemoteDataSource = CategoryRemoteDataSourceImpl(client: widget.dio); // Используем Dio из widget.dio
+    _productRemoteDataSource = ProductRemoteDataSourceImpl(client: widget.dio); // Используем Dio из widget.dio
     _categoryRepository = CategoryRepositoryImpl(remoteDataSource: _categoryRemoteDataSource);
     _productRepository = ProductRepositoryImpl(remoteDataSource: _productRemoteDataSource);
     _getCategories = GetCategories(_categoryRepository);

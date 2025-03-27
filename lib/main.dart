@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
-import 'core/service_locator.dart'; // Импортируйте файл service_locator.dart
+import 'package:dio/dio.dart';
 import 'presentation/ui/pages/category_page.dart';
 
 void main() {
-  setupServiceLocator(); // Вызовите setupServiceLocator() до runApp()
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final dio = Dio();
+    // Настраиваем базовый URL (если он у вас есть)
+    dio.options.baseUrl = 'https://coffeeshop.academy.effective.band/api/v1';
+    // Настраиваем заголовки (если нужно)
+    dio.options.headers['Content-Type'] = 'application/json';
     return MaterialApp(
-      home: CategoryPage(),
+      home: CategoryPage(dio: dio),
     );
   }
 }
