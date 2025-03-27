@@ -1,7 +1,8 @@
 import 'package:dartz/dartz.dart';
-import '../../domain/entities/category.dart';
+import '../../domain/entities/category.dart' as CategoryEntity;
 import '../../domain/repositories/category_repository.dart';
 import '../datasources/remote/category_remote_data_source.dart';
+import '../models/category_model.dart';
 import '../../../core/errors/failures.dart';
 import '../../../core/errors/exceptions.dart';
 
@@ -11,12 +12,16 @@ class CategoryRepositoryImpl implements CategoryRepository {
   CategoryRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, List<Category>>> getCategories() async {
+  Future<Either<Failure, List<CategoryEntity.Category>>> getCategories() async {
     try {
       final remoteCategories = await remoteDataSource.getCategories();
-      return Right(remoteCategories);
+      return Right(remoteCategories.map(_mapToEntity).toList());
     } on ServerException {
       return Left(ServerFailure());
     }
+  }
+
+  CategoryEntity.Category _mapToEntity(CategoryModel model) {
+    return CategoryEntity.Category(id: model.id, slug: model.slug);
   }
 }
