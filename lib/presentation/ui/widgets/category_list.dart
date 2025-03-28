@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../domain/entities/category.dart' as CategoryEntity;
 
+
 class CategoryListWidget extends StatelessWidget {
   final List<CategoryEntity.Category> categories;
 

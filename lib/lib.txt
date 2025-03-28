@@ -8,7 +8,6 @@ core/
     input_converter.dart
 data/
   datasources/
-    local/
     remote/
       category_remote_data_source.dart
       product_remote_data_source.dart
@@ -28,15 +27,17 @@ domain/
   usecases/
     get_categories.dart
     get_products_by_category_id.dart
-features/
 presentation/
-  blocs/
   ui/
+    icons/
+      theme_toggle_button.svg
     pages/
       category_page.dart
+      product_detail_page.dart
     widgets/
       add_button.dart
       category_list.dart
       product_card.dart
       product_grid.dart
+      theme_toggle_button.dart
 main.dart

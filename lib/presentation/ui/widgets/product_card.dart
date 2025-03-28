@@ -1,83 +1,203 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../domain/entities/product.dart';
+import '../../providers/cart_provider.dart';
 
-class ProductCard extends StatelessWidget {
+class ProductCard extends StatefulWidget {
   final String name;
   final String imageUrl;
   final String price;
+  final VoidCallback onTap;
+  final Product product;
 
   const ProductCard({
-    Key? key,
+    super.key,
     required this.name,
     required this.imageUrl,
     required this.price,
-  }) : super(key: key);
+    required this.onTap,
+    required this.product,
+  });
+
+  @override
+  State<ProductCard> createState() => _ProductCardState();
+}
+
+class _ProductCardState extends State<ProductCard> {
+  int quantity = 0;
+  static const int maxQuantity = 10;
+
+  void _incrementQuantity() {
+    if (quantity < maxQuantity) {
+      setState(() {
+        quantity++;
+      });
+
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      final price = double.tryParse(widget.price.split(' ')[0]) ?? 0.0;
+
+      // Добавляем товар в корзину при первом нажатии
+      if (quantity == 1) {
+        cartProvider.addItem(widget.product.id.toString(), widget.name, price);
+      } else {
+        // Обновляем количество для существующего товара
+        cartProvider.updateQuantity(widget.product.id.toString(), quantity);
+      }
+    }
+  }
+
+  void _decrementQuantity() {
+    if (quantity > 0) {
+      setState(() {
+        quantity--;
+      });
+
+      Provider.of<CartProvider>(
+        context,
+        listen: false,
+      ).updateQuantity(widget.product.id.toString(), quantity);
+    }
+  }
+
+  Widget _buildQuantityControls() {
+    if (quantity == 0) {
+      return Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: const Color(0xFF5CBCE5),
+          borderRadius: BorderRadius.circular(100),
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.add, color: Colors.white),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+          onPressed: _incrementQuantity,
+        ),
+      );
+    }
+
+    return Container(
+      height: 40,
+      constraints: const BoxConstraints(maxWidth: 140),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFFD9D9D9),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.remove, color: Color(0xFF484647)),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: _decrementQuantity,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            width: 32, // Увеличиваем с 24 до 32 для двузначных чисел
+            child: Text(
+              quantity.toString(),
+              style: const TextStyle(
+                fontFamily: 'Open Sans',
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF484647),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFFD9D9D9),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.add, color: Color(0xFF484647)),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: quantity < maxQuantity ? _incrementQuantity : null,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 180,
-      height: 242,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      padding: const EdgeInsets.all(20.0),  //  Заменяем margin на padding для внутренних отступов
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Product
-          Column(
-            children: [
-              // Picture Frame
-              Container(
-                width: 100,
-                height: 100,
-                alignment: Alignment.center,
-                child: _buildImage(imageUrl),
-              ),
-              const SizedBox(height: 8),
-              // Кофе (название)
-              SizedBox(
-                height: 28,
-                child: Text(
-                  name,
-                  style: const TextStyle(
-                    fontFamily: 'Open Sans',
-                    fontSize: 22,
-                    fontWeight: FontWeight.normal,
-                    color: Color(0xFF484647),
-                    height: 28 / 22,
-                  ),
-                  textAlign: TextAlign.center,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: Container(
+        width: 180,
+        height: 242,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Column(
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  alignment: Alignment.center,
+                  child: _buildImage(widget.imageUrl),
                 ),
-              ),
-            ],
-          ),
-
-          // Bottom card elements
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: Text(
-                  _formatPrice(price),
-                  style: const TextStyle(
-                    fontFamily: 'Open Sans',
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF484647),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 28,
+                  child: Text(
+                    widget.name,
+                    style: const TextStyle(
+                      fontFamily: 'Open Sans',
+                      fontSize: 22,
+                      fontWeight: FontWeight.normal,
+                      color: Color(0xFF484647),
+                      height: 28 / 22,
+                    ),
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
                   ),
-                  textAlign: TextAlign.left,
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              _buildAddButton(), //  Используем отдельный метод для кнопки
-            ],
-          ),
-        ],
+              ],
+            ),
+            Row(
+              mainAxisAlignment:
+                  quantity == 0
+                      ? MainAxisAlignment.spaceBetween
+                      : MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                if (quantity == 0)
+                  Text(
+                    _formatPrice(widget.price),
+                    style: const TextStyle(
+                      fontFamily: 'Open Sans',
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF484647),
+                    ),
+                  ),
+                _buildQuantityControls(),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -86,7 +206,7 @@ class ProductCard extends StatelessWidget {
     if (imageUrl.isNotEmpty) {
       return Image.network(
         imageUrl,
-        fit: BoxFit.contain,  //  Обеспечиваем отображение всей картинки
+        fit: BoxFit.contain,
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
           return const Center(child: CircularProgressIndicator());
@@ -115,22 +235,5 @@ class ProductCard extends StatelessWidget {
       print('Error formatting price: $e');
     }
     return priceString.replaceAll('RUB', '₽');
-  }
-
-  Widget _buildAddButton() {  //  Отдельный метод для кнопки "Купить"
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: const Color(0xFF5CBCE5),
-        borderRadius: BorderRadius.circular(100),
-      ),
-      child: IconButton(
-        icon: const Icon(Icons.add, color: Colors.white),  //  Иконка "+"
-        onPressed: () {
-          print('Купить $name');
-        },
-      ),
-    );
   }
 }

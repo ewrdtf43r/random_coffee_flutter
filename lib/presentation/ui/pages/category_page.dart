@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-// ... другие импорты ...
+import 'package:flutter/scheduler.dart';
 import '../../../data/datasources/remote/category_remote_data_source.dart';
 import '../../../domain/entities/category.dart' as CategoryEntity;
 import '../../../domain/entities/product.dart';
@@ -10,11 +10,14 @@ import '../../../core/errors/failures.dart';
 import '../widgets/product_card.dart';
 import '../widgets/category_list.dart';
 import '../widgets/theme_toggle_button.dart';
-// Добавленные импорты:
 import '../../../data/repositories/category_repository_impl.dart';
 import '../../../data/repositories/product_repository_impl.dart';
 import '../../../data/datasources/remote/product_remote_data_source.dart';
-// ... остальные импорты ...
+import 'product_detail_page.dart';
+import 'package:provider/provider.dart';
+import '../widgets/cart_button.dart';
+import '../../providers/cart_provider.dart';
+
 class CategoryPage extends StatefulWidget {
   final Dio dio;
 
@@ -37,13 +40,21 @@ class _CategoryPageState extends State<CategoryPage> {
   @override
   void initState() {
     super.initState();
-    _categoryRemoteDataSource = CategoryRemoteDataSourceImpl(client: widget.dio);
+    _categoryRemoteDataSource = CategoryRemoteDataSourceImpl(
+      client: widget.dio,
+    );
     _productRemoteDataSource = ProductRemoteDataSourceImpl(client: widget.dio);
-    _categoryRepository = CategoryRepositoryImpl(remoteDataSource: _categoryRemoteDataSource);
-    _productRepository = ProductRepositoryImpl(remoteDataSource: _productRemoteDataSource);
+    _categoryRepository = CategoryRepositoryImpl(
+      remoteDataSource: _categoryRemoteDataSource,
+    );
+    _productRepository = ProductRepositoryImpl(
+      remoteDataSource: _productRemoteDataSource,
+    );
     _getCategories = GetCategories(_categoryRepository);
     _getProductsByCategoryId = GetProductsByCategoryId(_productRepository);
-    _fetchData();
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _fetchData();
+    });
   }
 
   Future<void> _fetchData() async {
@@ -54,8 +65,8 @@ class _CategoryPageState extends State<CategoryPage> {
   Future<void> _fetchCategories() async {
     final result = await _getCategories.execute();
     result.fold(
-          (failure) => _handleFailure(failure),
-          (categories) => setState(() {
+      (failure) => _handleFailure(failure),
+      (categories) => setState(() {
         _categories = categories;
       }),
     );
@@ -65,8 +76,8 @@ class _CategoryPageState extends State<CategoryPage> {
     for (final category in _categories) {
       final result = await _getProductsByCategoryId.execute(category.id);
       result.fold(
-            (failure) => _onGetProductsFailure(failure, category.id),
-            (products) => _onGetProductsSuccess(products, category.id),
+        (failure) => _onGetProductsFailure(failure, category.id),
+        (products) => _onGetProductsSuccess(products, category.id),
       );
     }
   }
@@ -89,14 +100,14 @@ class _CategoryPageState extends State<CategoryPage> {
     // TODO: Добавьте более информативную обработку ошибок, например, отображение SnackBar.
   }
 
-
+  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
       body: Stack(
         children: [
-          // Горизонтальный список категорий (прижат к верху, отступ 16px)
+          // Список категорий
           Positioned(
             top: 16,
             left: 16,
@@ -104,72 +115,102 @@ class _CategoryPageState extends State<CategoryPage> {
             child: CategoryListWidget(categories: _categories),
           ),
 
-          // Вертикальный список (ниже горизонтального, занимает все оставшееся пространство)
+          // Список продуктов
           Positioned(
-            top: 16 + 29 + 16, // Отступ: отступ CategoryList + высота CategoryList + зазор между списками
+            top: 16 + 29 + 16, // Отступ сверху + высота категорий + отступ
             left: 16,
             right: 16,
             bottom: 0,
-            child: _categories.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-              itemCount: _categories.length,
-              itemBuilder: (context, index) {
-                final category = _categories[index];
-                final products = _productsByCategoryId[category.id] ?? [];
+            child:
+                _categories.isEmpty
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                      itemCount: _categories.length,
+                      itemBuilder: (context, index) {
+                        final category = _categories[index];
+                        final products =
+                            _productsByCategoryId[category.id] ?? [];
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: Text(
-                        category.slug,
-                        style: const TextStyle(
-                          fontFamily: 'Open Sans',
-                          fontWeight: FontWeight.normal,
-                          fontSize: 32,
-                          height: 40 / 32,
-                          color: Color(0xFF484647),
-                        ),
-                      ),
-                    ),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.7,
-                        crossAxisSpacing: 20,
-                        mainAxisSpacing: 16,
-                      ),
-                      padding: EdgeInsets.zero,
-                      itemCount: products.length,
-                      itemBuilder: (context, productIndex) {
-                        final product = products[productIndex];
-                        return ProductCard(
-                          name: product.name,
-                          imageUrl: product.imageUrl,
-                          price: product.prices.isNotEmpty
-                              ? '${product.prices.first.value} ${product.prices.first.currency}'
-                              : 'Цена не указана',
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: Text(
+                                category.slug,
+                                style: const TextStyle(
+                                  fontFamily: 'Open Sans',
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 32,
+                                  height: 40 / 32,
+                                  color: Color(0xFF484647),
+                                ),
+                              ),
+                            ),
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    childAspectRatio: 0.7,
+                                    crossAxisSpacing: 20,
+                                    mainAxisSpacing: 16,
+                                  ),
+                              padding: EdgeInsets.zero,
+                              itemCount: products.length,
+                              itemBuilder: (context, productIndex) {
+                                final product = products[productIndex];
+                                return ProductCard(
+                                  name: product.name,
+                                  imageUrl: product.imageUrl,
+                                  price:
+                                      product.prices.isNotEmpty
+                                          ? '${product.prices.first.value} ${product.prices.first.currency}'
+                                          : 'Цена не указана',
+                                  product: product,
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) => ProductDetailPage(
+                                              product: product,
+                                            ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                            if (index < _categories.length - 1)
+                              const SizedBox(height: 24),
+                          ],
                         );
                       },
                     ),
-                    if (index < _categories.length - 1) const SizedBox(height: 24),
-                  ],
-                );
-              },
-            ),
           ),
-          // Кнопка смены темы (левый нижний угол, статичная)
+
+          // Кнопка смены темы
           Positioned(
             left: 16,
             bottom: 32,
             child: ThemeToggleButton(
               onPressed: () {
-                // TODO: Реализуйте логику смены темы
                 print("Смена темы нажата!");
+              },
+            ),
+          ),
+
+          // Кнопка корзины
+          Positioned(
+            right: 16,
+            bottom: 32,
+            child: Consumer<CartProvider>(
+              builder: (context, cart, child) {
+                return cart.itemCount > 0
+                    ? const CartButton()
+                    : const SizedBox.shrink();
               },
             ),
           ),
