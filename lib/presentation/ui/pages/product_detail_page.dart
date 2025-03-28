@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../domain/entities/product.dart';
+import '../widgets/theme_toggle_button.dart';
 
 class ProductDetailPage extends StatelessWidget {
   final Product product;
@@ -10,7 +12,16 @@ class ProductDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(product.name),
+        leading: IconButton(
+          icon: SvgPicture.asset(
+            'lib/presentation/ui/icons/back.svg',
+            width: 24,
+            height: 24,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: Stack(
         children: [
@@ -83,6 +94,15 @@ class ProductDetailPage extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+          ),
+          Positioned(
+            left: 16,
+            bottom: 32,
+            child: ThemeToggleButton(
+              onPressed: () {
+                print("Смена темы нажата!");
+              },
             ),
           ),
         ],
