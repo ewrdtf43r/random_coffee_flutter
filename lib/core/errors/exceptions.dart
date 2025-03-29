@@ -7,3 +7,12 @@ class ServerException implements Exception {
   @override
   String toString() => 'ServerException: $message (Status code: $statusCode)';
 }
+
+class NetworkException implements Exception {
+  final String message;
+
+  NetworkException({this.message = 'Нет подключения к интернету'});
+
+  @override
+  String toString() => 'NetworkException: $message';
+}

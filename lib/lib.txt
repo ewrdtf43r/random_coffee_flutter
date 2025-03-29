@@ -1,4 +1,4 @@
-core/
+﻿core/
   errors/
     exceptions.dart
     failures.dart
@@ -6,37 +6,52 @@ core/
     network_info.dart
   utils/
     input_converter.dart
+  globals.dart
 data/
   datasources/
     remote/
       category_remote_data_source.dart
+      order_remote_data_source.dart
       product_remote_data_source.dart
   models/
     category_model.dart
+    order_response_model.dart
     product_model.dart
   repositories/
     category_repository_impl.dart
+    order_repository_impl.dart
     product_repository_impl.dart
 domain/
   entities/
+    cart_item.dart
     category.dart
     product.dart
   repositories/
     category_repository.dart
+    order_repository.dart
     product_repository.dart
   usecases/
+    create_order.dart
     get_categories.dart
     get_products_by_category_id.dart
 presentation/
+  providers/
+    cart_provider.dart
   ui/
     icons/
+      back.svg
+      bin.svg
+      cart.svg
       theme_toggle_button.svg
     pages/
       category_page.dart
       product_detail_page.dart
     widgets/
       add_button.dart
+      cart_bottom_sheet.dart
+      cart_button.dart
       category_list.dart
+      custom_snackbar.dart
       product_card.dart
       product_grid.dart
       theme_toggle_button.dart
