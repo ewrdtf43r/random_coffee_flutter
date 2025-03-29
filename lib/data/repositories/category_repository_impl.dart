@@ -16,8 +16,8 @@ class CategoryRepositoryImpl implements CategoryRepository {
     try {
       final remoteCategories = await remoteDataSource.getCategories();
       return Right(remoteCategories.map(_mapToEntity).toList());
-    } on ServerException {
-      return Left(ServerFailure());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
     }
   }
 
